@@ -15,9 +15,8 @@ class GroceryList extends StatefulWidget {
 }
 
 class _GroceryList extends State<GroceryList> {
-  List<GroceryItem> _groceryItems = [];
+  final List<GroceryItem> _groceryItems = [];
   late Future<List<GroceryItem>> _loadedItems;
-  String? _error;
 
   @override
   void initState() {
@@ -57,18 +56,10 @@ class _GroceryList extends State<GroceryList> {
   }
 
   void _removeItem(GroceryItem item) async {
-    final index = _groceryItems.indexOf(item);
+    _groceryItems.indexOf(item);
     setState(() {
       _groceryItems.remove(item);
     });
-    final url = Uri.https("shopappflutter-aa184-default-rtdb.firebaseio.com",
-        "shopping-app/${item.id}.json");
-    final response = await http.delete(url);
-    if (response.statusCode >= 400) {
-      setState(() {
-        _groceryItems.insert(index, item);
-      });
-    }
   }
 
   void _addItem() async {
@@ -84,28 +75,6 @@ class _GroceryList extends State<GroceryList> {
 
   @override
   Widget build(BuildContext context) {
-    Widget content = const Center(child: Text("No items added yet"));
-
-    if (_groceryItems.isNotEmpty) {
-      content = ListView.builder(
-        itemCount: _groceryItems.length,
-        itemBuilder: (ctx, index) => Dismissible(
-          onDismissed: (direction) {
-            _removeItem(_groceryItems[index]);
-          },
-          key: ValueKey(_groceryItems[index].id),
-          child: ListTile(
-            title: Text(_groceryItems[index].name),
-            leading: Container(
-              width: 24,
-              height: 24,
-              color: _groceryItems[index].category.color,
-            ),
-            trailing: Text(_groceryItems[index].quantity.toString()),
-          ),
-        ),
-      );
-    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your Groceries"),
@@ -134,6 +103,26 @@ class _GroceryList extends State<GroceryList> {
               child: Text("No items added yet"),
             );
           }
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (ctx, index) => Dismissible(
+              onDismissed: (direction) {
+                _removeItem(snapshot.data![index]);
+              },
+              key: ValueKey(snapshot.data![index].id),
+              child: ListTile(
+                title: Text(snapshot.data![index].name),
+                leading: Container(
+                  width: 24,
+                  height: 24,
+                  color: snapshot.data![index].category.color,
+                ),
+                trailing: Text(
+                  snapshot.data![index].quantity.toString(),
+                ),
+              ),
+            ),
+          );
         },
       ),
     );
